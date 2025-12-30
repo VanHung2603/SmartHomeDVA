@@ -117,7 +117,7 @@ export default function App() {
             ))}
           </ul>
 
-          <div className="small">Cmd → /cmd/esp32/main_door</div>
+          {/* <div className="small">Cmd → /cmd/esp32/main_door</div> */}
         </Card>
 
 
@@ -134,7 +134,7 @@ export default function App() {
             <Btn onClick={() => sendCmd("esp8266/fire", { relay: false })}>Relay OFF</Btn>
             <Btn onClick={() => sendCmd("esp8266/fire", { buzzer: true })}>Buzzer</Btn>
           </div>
-          <div className="small">Cmd → /cmd/esp8266/fire</div>
+          {/* <div className="small">Cmd → /cmd/esp8266/fire</div> */}
         </Card>
 
         {/* LED tự động */}
@@ -157,7 +157,7 @@ export default function App() {
     </Btn>
   </div>
 
-  <div className="small">Cmd → /cmd/esp8266/lighting</div>
+  {/* <div className="small">Cmd → /cmd/esp8266/lighting</div> */}
 </Card>
 
 
@@ -174,7 +174,7 @@ export default function App() {
             <Btn onClick={() => sendCmd("esp32/clothes", { moveTo: 0 })}>Thu vào (0%)</Btn>
             <Btn onClick={() => sendCmd("esp32/clothes", { moveTo: 100 })}>Đẩy ra (100%)</Btn>
           </div>
-          <div className="small">Cmd → /cmd/esp32/clothes</div>
+          {/* <div className="small">Cmd → /cmd/esp32/clothes</div> */}
         </Card>
 
         <Card title="🚪 Cửa trong nhà (PIR)">
@@ -198,7 +198,7 @@ export default function App() {
           </Btn>
           </div>
 
-  <div className="small">Cmd → /cmd/esp32/inner_door</div>
+  {/* <div className="small">Cmd → /cmd/esp32/inner_door</div> */}
 </Card>
 
 
@@ -228,7 +228,7 @@ export default function App() {
     </Btn>
   </div>
 
-  <div className="small">Cmd → /cmd/esp32/elevator (id + floor: 0|1)</div>
+  {/* <div className="small">Cmd → /cmd/esp32/elevator (id + floor: 0|1)</div> */}
 </Card>
 
       </div>
