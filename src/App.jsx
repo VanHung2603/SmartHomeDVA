@@ -216,7 +216,7 @@ export default function App() {
         sendCmd("esp32/elevator", { id: String(Date.now()), floor: 0 })
       }
     >
-      Tầng 0
+      Tầng 1
     </Btn>
 
     <Btn
@@ -224,7 +224,7 @@ export default function App() {
         sendCmd("esp32/elevator", { id: String(Date.now()), floor: 1 })
       }
     >
-      Tầng 1
+      Tầng 2
     </Btn>
   </div>
 
