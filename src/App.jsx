@@ -85,7 +85,7 @@ export default function App() {
       <div className="grid">
         <div className="header">
           <h1 style={{ margin: 0 }}>Smarthome from Duong Van An School</h1>
-          <div className="small">Theo dõi & điều khiển ESP8266 / ESP32 (Realtime)</div>
+          {/* <div className="small">Theo dõi & điều khiển ESP8266 / ESP32 (Realtime)</div> */}
         </div>
 
         <Card title="🚪 Cửa chính (RFID)">
