@@ -8,23 +8,18 @@ export default async function handler(req, res) {
     const { messages = [], context = null } = req.body || {};
     if (!Array.isArray(messages)) return res.status(400).json({ error: "messages must be an array" });
 
-    // Model nhỏ, chạy được trên HF Inference API free tier
-    // Bạn có thể đổi model nếu muốn
-    const model = "google/flan-t5-base"; // nhẹ, rẻ, ổn cho QA/tóm tắt
+    const model = "google/flan-t5-base";
 
-    // Ghép prompt: system + context + hội thoại
     const system =
-      "Bạn là AI trợ lý Smarthome. Trả lời ngắn gọn, rõ ràng, tiếng Việt. Nếu phát hiện nguy hiểm (gas cao, alarm ON) phải cảnh báo.";
-    const convo = messages
-      .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
-      .join("\n");
+      "Bạn là AI trợ lý Smarthome. Trả lời ngắn gọn, rõ ràng, tiếng Việt. Nếu nguy hiểm (gas cao, alarm ON) phải cảnh báo.";
+    const convo = messages.map(m => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n");
 
     const prompt =
       `${system}\n` +
-      `CONTEXT (realtime snapshot): ${JSON.stringify(context)}\n\n` +
+      `CONTEXT: ${JSON.stringify(context)}\n\n` +
       `${convo}\nAssistant:`;
 
-    const hfRes = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+    const hfRes = await fetch(`https://router.huggingface.co/hf-inference/models/${model}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -37,27 +32,17 @@ export default async function handler(req, res) {
           temperature: 0.3,
           return_full_text: false,
         },
-        options: {
-          wait_for_model: true, // model cold-start thì đợi
-        },
       }),
     });
 
-    const text = await hfRes.text();
+    const raw = await hfRes.text();
     let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      return res.status(500).json({ error: `HF invalid JSON: ${text}` });
-    }
+    try { data = JSON.parse(raw); } catch { return res.status(500).json({ error: raw }); }
 
     if (!hfRes.ok) {
-      // HF thường trả {error: "..."} hoặc {estimated_time: ...}
-      return res.status(hfRes.status).json({ error: data?.error || text });
+      return res.status(hfRes.status).json({ error: data?.error || raw });
     }
 
-    // HF trả về nhiều format tùy model
-    // flan-t5 thường trả: [{ generated_text: "..." }]
     let reply = "";
     if (Array.isArray(data) && data[0]?.generated_text) reply = data[0].generated_text;
     else if (typeof data?.generated_text === "string") reply = data.generated_text;
