@@ -1,5 +1,7 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
   try {
     const token = process.env.CF_API_TOKEN;
@@ -10,12 +12,25 @@ export default async function handler(req, res) {
     }
 
     const { messages = [], context = {} } = req.body || {};
+    if (!Array.isArray(messages)) {
+      return res.status(400).json({ error: "messages must be an array" });
+    }
 
-    const system =
-      "Bạn là AI trợ lý Smarthome. Trả lời ngắn gọn tiếng Việt. Nếu nguy hiểm (gas cao, alarm ON) phải cảnh báo rõ.";
-    const prompt =
-      `${system}\nCONTEXT: ${JSON.stringify(context)}\n\n` +
-      `${messages.map(m => `${m.role}: ${m.content}`).join("\n")}\nassistant:`;
+    const prompt = `
+### SYSTEM (BẮT BUỘC TUÂN THỦ)
+Bạn là AI trợ lý Smarthome của trường Dương Văn An.
+CHỈ được trả lời bằng TIẾNG VIỆT. Tuyệt đối không dùng tiếng Anh.
+Trả lời ngắn gọn, kỹ thuật, rõ ràng.
+Nếu phát hiện nguy hiểm (gas cao, alarm ON) thì phải CẢNH BÁO NGAY.
+
+### TRẠNG THÁI HỆ THỐNG (JSON)
+${JSON.stringify(context, null, 2)}
+
+### HỘI THOẠI
+${messages.map(m => `${String(m.role || "user").toUpperCase()}: ${String(m.content || "")}`).join("\n")}
+
+### AI (trả lời bằng tiếng Việt):
+`.trim();
 
     const r = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${account}/ai/run/@cf/meta/llama-3-8b-instruct`,
