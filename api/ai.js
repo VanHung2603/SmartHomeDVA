@@ -49,8 +49,14 @@ ${messages.map(m => `${String(m.role || "user").toUpperCase()}: ${String(m.conte
     if (!r.ok) {
       return res.status(500).json({ error: data?.errors || data });
     }
+      let reply = data?.result?.response || "";
 
-    return res.status(200).json({ reply: data?.result?.response || "" });
+// remove các prefix hay bị lặp
+reply = reply.replace(/^\s*(ASSISTANT|AI)\s*:\s*/i, "");
+reply = reply.replace(/^\s*assistant\s*:\s*/i, "");
+
+return res.status(200).json({ reply });
+    // return res.status(200).json({ reply: data?.result?.response || "" });
   } catch (e) {
     return res.status(500).json({ error: e?.message || "Server error" });
   }
