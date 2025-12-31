@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
     // Bạn có thể đổi model. Nên chọn model chat/instruct nhỏ.
     // Lưu ý: model phải “available” trên Inference Providers/Router của HF.
-    const model = "HuggingFaceH4/zephyr-7b-beta";
+    const model = "mistralai/Mistral-7B-Instruct-v0.2";
 
     // Nhét context realtime vào system message
     const sys = [
