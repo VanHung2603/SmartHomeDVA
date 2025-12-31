@@ -1,9 +1,4 @@
-/* eslint-env node */
 import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -11,25 +6,40 @@ export default async function handler(req, res) {
   }
 
   try {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "Missing OPENAI_API_KEY on Vercel" });
+    }
+
+    const client = new OpenAI({ apiKey });
+
     const { messages = [], context = null } = req.body || {};
+    if (!Array.isArray(messages)) {
+      return res.status(400).json({ error: "messages must be an array" });
+    }
 
     const completion = await client.chat.completions.create({
       model: "gpt-4.1-mini",
+      temperature: 0.3,
       messages: [
         {
           role: "system",
           content:
-            "Bạn là AI trợ lý Smarthome. Trả lời ngắn gọn, tiếng Việt, dựa trên CONTEXT. Nếu nguy hiểm (gas cao, alarm) phải cảnh báo rõ.",
+            "Bạn là AI trợ lý Smarthome. Trả lời ngắn gọn tiếng Việt, dựa trên CONTEXT. Nếu nguy hiểm (gas cao, alarm) cảnh báo rõ.",
         },
         { role: "system", content: "CONTEXT: " + JSON.stringify(context) },
         ...messages,
       ],
-      temperature: 0.4,
     });
 
-    const reply = completion.choices[0].message.content;
-    return res.status(200).json({ reply });
+    return res.status(200).json({
+      reply: completion.choices?.[0]?.message?.content ?? "",
+    });
   } catch (e) {
-    return res.status(500).json({ error: e.message || "Server error" });
+    return res.status(500).json({
+      error: e?.message || String(e),
+      name: e?.name,
+      status: e?.status,
+    });
   }
 }
