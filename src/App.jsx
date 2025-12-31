@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { db } from "./firebase";
 import { ref, onValue, update } from "firebase/database";
+import AiChatWidget from "./AiChatWidget"; // ✅ THÊM DÒNG NÀY
 
 function Card({ title, children }) {
   return (
@@ -80,6 +81,26 @@ export default function App() {
     await update(ref(db, `cmd/${path}`), payload);
   };
 
+  // ✅ THÊM getContext để AI đọc trạng thái realtime
+  const getContext = () => ({
+    esp8266: {
+      fire: d8266?.fire || null,
+      lighting: d8266?.lighting || null,
+    },
+    esp32: {
+      main_door: d32?.main_door || null,
+      clothes: d32?.clothes || null,
+      door2: d32?.door2 || null,
+      elevator: d32?.elevator || null,
+    },
+    rfid: {
+      latest: rfidLatest || null,
+      logs: rfidLogs || [],
+    },
+    // có thể thêm metadata
+    updatedAt: Date.now(),
+  });
+
   return (
     <div className="page">
       <div className="grid">
@@ -120,52 +141,54 @@ export default function App() {
           {/* <div className="small">Cmd → /cmd/esp32/main_door</div> */}
         </Card>
 
-
         {/* Báo cháy */}
         <Card title="🔥 Báo cháy (ESP8266)">
           <Row label="Gas (MQ-2)" value={d8266?.fire?.gas_ppm} />
-          <Row label="Nhiệt độ (DHT22)" value={d8266?.fire?.temp_c != null ? `${d8266.fire.temp_c} °C` : null} />
-          <Row label="Độ ẩm (DHT22)" value={d8266?.fire?.humi != null ? `${d8266.fire.humi} %` : null} />
+          <Row
+            label="Nhiệt độ (DHT22)"
+            value={d8266?.fire?.temp_c != null ? `${d8266.fire.temp_c} °C` : null}
+          />
+          <Row
+            label="Độ ẩm (DHT22)"
+            value={d8266?.fire?.humi != null ? `${d8266.fire.humi} %` : null}
+          />
           <Row label="Alarm" value={d8266?.fire?.alarm ? "ON" : "OFF"} />
-          {/* <Row label="Relay" value={d8266?.fire?.relay ? "ON" : "OFF"} /> */}
 
           <div className="btnBar">
             <Btn onClick={() => sendCmd("esp8266/fire", { relay: true })}>Relay ON</Btn>
             <Btn onClick={() => sendCmd("esp8266/fire", { relay: false })}>Relay OFF</Btn>
             <Btn onClick={() => sendCmd("esp8266/fire", { buzzer: true })}>Buzzer</Btn>
           </div>
-          {/* <div className="small">Cmd → /cmd/esp8266/fire</div> */}
         </Card>
 
         {/* LED tự động */}
         <Card title="💡 Đèn thông minh (ESP8266)">
-  <Row label="Mode" value={d8266?.lighting?.mode} />
-  <Row label="LED" value={d8266?.lighting?.state ? "ON" : "OFF"} />
+          <Row label="Mode" value={d8266?.lighting?.mode} />
+          <Row label="LED" value={d8266?.lighting?.state ? "ON" : "OFF"} />
 
-  <div className="btnBar">
-    <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "auto", onHour: 19, offHour: 22 })}>
-      Auto
-    </Btn>
-    <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual" })}>
-      Manual
-    </Btn>
-    <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual", state: true })}>
-      LED ON
-    </Btn>
-    <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual", state: false })}>
-      LED OFF
-    </Btn>
-  </div>
-
-  {/* <div className="small">Cmd → /cmd/esp8266/lighting</div> */}
-</Card>
-
+          <div className="btnBar">
+            <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "auto", onHour: 19, offHour: 22 })}>
+              Auto
+            </Btn>
+            <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual" })}>
+              Manual
+            </Btn>
+            <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual", state: true })}>
+              LED ON
+            </Btn>
+            <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual", state: false })}>
+              LED OFF
+            </Btn>
+          </div>
+        </Card>
 
         {/* Thu quần áo */}
         <Card title="👕 Thu quần áo (ESP32)">
           <Row label="Mưa" value={d32?.clothes?.isRaining ? "ĐANG MƯA" : "KHÔNG MƯA"} />
-          {/* <Row label="Lux" value={d32?.clothes?.lux} /> */}
-          <Row label="Vị trí (servo %)" value={d32?.clothes?.linePos != null ? `${d32.clothes.linePos}%` : null} />
+          <Row
+            label="Vị trí (servo %)"
+            value={d32?.clothes?.linePos != null ? `${d32.clothes.linePos}%` : null}
+          />
           <Row label="Mode" value={d32?.clothes?.mode} />
 
           <div className="btnBar">
@@ -174,64 +197,49 @@ export default function App() {
             <Btn onClick={() => sendCmd("esp32/clothes", { moveTo: 0 })}>Thu vào (0%)</Btn>
             <Btn onClick={() => sendCmd("esp32/clothes", { moveTo: 100 })}>Đẩy ra (100%)</Btn>
           </div>
-          {/* <div className="small">Cmd → /cmd/esp32/clothes</div> */}
         </Card>
 
         <Card title="🚪 Cửa trong nhà (PIR)">
-          {/* <Row label="PIR Motion" value={d32?.door2?.motion ? "CÓ NGƯỜI" : "KHÔNG"} /> */}
           <Row label="Trạng thái" value={d32?.door2?.state} />
           <Row label="Mode" value={d32?.door2?.mode} />
 
-
           <div className="btnBar">
             <Btn onClick={() => sendCmd("esp32/inner_door", { mode: "auto", id: String(Date.now()) })}>
-            Auto
-          </Btn>
-          <Btn onClick={() => sendCmd("esp32/inner_door", { mode: "manual", id: String(Date.now()) })}>
-            Manual
-          </Btn>
+              Auto
+            </Btn>
+            <Btn onClick={() => sendCmd("esp32/inner_door", { mode: "manual", id: String(Date.now()) })}>
+              Manual
+            </Btn>
             <Btn onClick={() => sendCmd("esp32/inner_door", { cmd: "open", id: String(Date.now()) })}>
-            Open
-          </Btn>
-          <Btn onClick={() => sendCmd("esp32/inner_door", { cmd: "close", id: String(Date.now()) })}>
-            Close
-          </Btn>
+              Open
+            </Btn>
+            <Btn onClick={() => sendCmd("esp32/inner_door", { cmd: "close", id: String(Date.now()) })}>
+              Close
+            </Btn>
           </div>
-
-  {/* <div className="small">Cmd → /cmd/esp32/inner_door</div> */}
-</Card>
-
+        </Card>
 
         {/* Thang máy */}
-<Card title="🛗 Thang máy (ESP32)">
-  <Row label="Tầng hiện tại" value={d32?.elevator?.currentFloor} />
-  <Row label="Tầng đích" value={d32?.elevator?.targetFloor} />
-  <Row label="Nguồn lệnh" value={d32?.elevator?.lastSource} />
-  <Row label="Step vị trí" value={d32?.elevator?.posSteps} />
-  <Row label="UpdatedAt" value={fmtTs(d32?.elevator?.updatedAt)} />
+        <Card title="🛗 Thang máy (ESP32)">
+          <Row label="Tầng hiện tại" value={d32?.elevator?.currentFloor} />
+          <Row label="Tầng đích" value={d32?.elevator?.targetFloor} />
+          <Row label="Nguồn lệnh" value={d32?.elevator?.lastSource} />
+          <Row label="Step vị trí" value={d32?.elevator?.posSteps} />
+          <Row label="UpdatedAt" value={fmtTs(d32?.elevator?.updatedAt)} />
 
-  <div className="btnBar">
-    <Btn
-      onClick={() =>
-        sendCmd("esp32/elevator", { id: String(Date.now()), floor: 0 })
-      }
-    >
-      Tầng 1
-    </Btn>
-
-    <Btn
-      onClick={() =>
-        sendCmd("esp32/elevator", { id: String(Date.now()), floor: 1 })
-      }
-    >
-      Tầng 2
-    </Btn>
-  </div>
-
-  {/* <div className="small">Cmd → /cmd/esp32/elevator (id + floor: 0|1)</div> */}
-</Card>
-
+          <div className="btnBar">
+            <Btn onClick={() => sendCmd("esp32/elevator", { id: String(Date.now()), floor: 0 })}>
+              Tầng 1
+            </Btn>
+            <Btn onClick={() => sendCmd("esp32/elevator", { id: String(Date.now()), floor: 1 })}>
+              Tầng 2
+            </Btn>
+          </div>
+        </Card>
       </div>
+
+      {/* ✅ GẮN WIDGET Ở CUỐI PAGE */}
+      <AiChatWidget getContext={getContext} />
     </div>
   );
 }
