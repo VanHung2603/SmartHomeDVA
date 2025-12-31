@@ -1,55 +1,42 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const token = process.env.HF_API_TOKEN;
-    if (!token) {
-      return res.status(500).json({ error: "Missing HF_API_TOKEN" });
+    const token = process.env.CF_API_TOKEN;
+    const account = process.env.CF_ACCOUNT_ID;
+
+    if (!token || !account) {
+      return res.status(500).json({ error: "Missing CF_API_TOKEN or CF_ACCOUNT_ID" });
     }
 
-    const { messages = [], context = {} } = req.body;
+    const { messages = [], context = {} } = req.body || {};
 
     const system =
-      "Bạn là AI trợ lý Smarthome. Trả lời ngắn gọn, rõ ràng, tiếng Việt. Nếu nguy hiểm (gas cao, alarm ON) phải cảnh báo rõ.";
-
-    const chat = messages.map(m => `${m.role}: ${m.content}`).join("\n");
-
+      "Bạn là AI trợ lý Smarthome. Trả lời ngắn gọn tiếng Việt. Nếu nguy hiểm (gas cao, alarm ON) phải cảnh báo rõ.";
     const prompt =
-`${system}
-CONTEXT: ${JSON.stringify(context)}
+      `${system}\nCONTEXT: ${JSON.stringify(context)}\n\n` +
+      `${messages.map(m => `${m.role}: ${m.content}`).join("\n")}\nassistant:`;
 
-${chat}
-assistant:`;    
-
-    const hfRes = await fetch(
-      "https://api-inference.huggingface.co/models/google/flan-t5-base",
+    const r = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${account}/ai/run/@cf/meta/llama-3-8b-instruct`,
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: 200,
-            temperature: 0.3
-          }
-        }),
+        body: JSON.stringify({ prompt }),
       }
     );
 
-    const data = await hfRes.json();
+    const data = await r.json();
 
-    if (!hfRes.ok) {
-      return res.status(500).json({ error: data.error || "HF error" });
+    if (!r.ok) {
+      return res.status(500).json({ error: data?.errors || data });
     }
 
-    const reply = Array.isArray(data) ? data[0].generated_text : data.generated_text;
-    res.status(200).json({ reply });
+    return res.status(200).json({ reply: data?.result?.response || "" });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: e?.message || "Server error" });
   }
 }
