@@ -1,0 +1,96 @@
+.ai-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.18);
+  z-index: 9999;
+}
+
+.ai-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.15);
+  z-index: 9998;
+}
+
+.ai-box {
+  position: fixed;
+  right: 18px;
+  bottom: 86px;
+  width: 340px;
+  max-width: calc(100vw - 36px);
+  height: 420px;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0,0,0,.22);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+}
+
+.ai-header {
+  background: #5b6cff;
+  color: white;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-title {
+  font-weight: 700;
+}
+
+.ai-close {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.ai-body {
+  padding: 10px 12px;
+  overflow: auto;
+  flex: 1;
+  font-size: 14px;
+}
+
+.ai-msg {
+  margin: 8px 0;
+}
+
+.ai-msg.user {
+  text-align: right;
+}
+
+.ai-footer {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid #eee;
+}
+
+.ai-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  outline: none;
+}
+
+.ai-send {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #111;
+  background: #fff;
+  cursor: pointer;
+}
