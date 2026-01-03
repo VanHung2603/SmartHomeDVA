@@ -143,7 +143,7 @@ export default function App() {
 
         {/* Báo cháy */}
         <Card title="🔥 Báo cháy (ESP8266)">
-          {/* <Row label="Gas (MQ-2)" value={d8266?.fire?.gas_ppm} /> */}
+          <Row label="Gas (MQ-2)" value={d8266?.fire?.gas_ppm} />
           <Row
             label="Nhiệt độ (DHT22)"
             value={d8266?.fire?.temp_c != null ? `${d8266.fire.temp_c} °C` : null}
