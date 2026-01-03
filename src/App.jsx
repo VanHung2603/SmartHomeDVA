@@ -122,10 +122,10 @@ export default function App() {
 
           <div className="btnBar">
             <Btn onClick={() => sendCmd("esp32/main_door", { cmd: "open", id: String(Date.now()) })}>
-              Open
+              Mở
             </Btn>
             <Btn onClick={() => sendCmd("esp32/main_door", { cmd: "close", id: String(Date.now()) })}>
-              Close
+              Đóng
             </Btn>
           </div>
 
@@ -143,7 +143,7 @@ export default function App() {
 
         {/* Báo cháy */}
         <Card title="🔥 Báo cháy (ESP8266)">
-          <Row label="Gas (MQ-2)" value={d8266?.fire?.gas_ppm} />
+          {/* <Row label="Gas (MQ-2)" value={d8266?.fire?.gas_ppm} /> */}
           <Row
             label="Nhiệt độ (DHT22)"
             value={d8266?.fire?.temp_c != null ? `${d8266.fire.temp_c} °C` : null}
@@ -152,11 +152,11 @@ export default function App() {
             label="Độ ẩm (DHT22)"
             value={d8266?.fire?.humi != null ? `${d8266.fire.humi} %` : null}
           />
-          <Row label="Alarm" value={d8266?.fire?.alarm ? "ON" : "OFF"} />
+          <Row label="Còi báo" value={d8266?.fire?.alarm ? "ON" : "OFF"} />
 
           <div className="btnBar">
-            <Btn onClick={() => sendCmd("esp8266/fire", { relay: true })}>Relay ON</Btn>
-            <Btn onClick={() => sendCmd("esp8266/fire", { relay: false })}>Relay OFF</Btn>
+            {/* <Btn onClick={() => sendCmd("esp8266/fire", { relay: true })}>Relay ON</Btn>
+            <Btn onClick={() => sendCmd("esp8266/fire", { relay: false })}>Relay OFF</Btn> */}
             <Btn onClick={() => sendCmd("esp8266/fire", { buzzer: true })}>Buzzer</Btn>
           </div>
         </Card>
@@ -168,16 +168,16 @@ export default function App() {
 
           <div className="btnBar">
             <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "auto", onHour: 19, offHour: 22 })}>
-              Auto
+              Tự động
             </Btn>
             <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual" })}>
-              Manual
+              Thủ công
             </Btn>
             <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual", state: true })}>
-              LED ON
+              LED bật
             </Btn>
             <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual", state: false })}>
-              LED OFF
+              LED tắt
             </Btn>
           </div>
         </Card>
@@ -192,8 +192,8 @@ export default function App() {
           <Row label="Mode" value={d32?.clothes?.mode} />
 
           <div className="btnBar">
-            <Btn onClick={() => sendCmd("esp32/clothes", { mode: "auto" })}>Auto</Btn>
-            <Btn onClick={() => sendCmd("esp32/clothes", { mode: "manual" })}>Manual</Btn>
+            <Btn onClick={() => sendCmd("esp32/clothes", { mode: "auto" })}>Tự động</Btn>
+            <Btn onClick={() => sendCmd("esp32/clothes", { mode: "manual" })}>Thủ công</Btn>
             <Btn onClick={() => sendCmd("esp32/clothes", { moveTo: 0 })}>Thu vào (0%)</Btn>
             <Btn onClick={() => sendCmd("esp32/clothes", { moveTo: 100 })}>Đẩy ra (100%)</Btn>
           </div>
@@ -205,24 +205,26 @@ export default function App() {
 
           <div className="btnBar">
             <Btn onClick={() => sendCmd("esp32/inner_door", { mode: "auto", id: String(Date.now()) })}>
-              Auto
+              Tự động
             </Btn>
             <Btn onClick={() => sendCmd("esp32/inner_door", { mode: "manual", id: String(Date.now()) })}>
-              Manual
+              Thủ công
             </Btn>
             <Btn onClick={() => sendCmd("esp32/inner_door", { cmd: "open", id: String(Date.now()) })}>
-              Open
+              Mở
             </Btn>
             <Btn onClick={() => sendCmd("esp32/inner_door", { cmd: "close", id: String(Date.now()) })}>
-              Close
+              Đóng
             </Btn>
           </div>
         </Card>
 
         {/* Thang máy */}
         <Card title="🛗 Thang máy (ESP32)">
-          <Row label="Tầng hiện tại" value={d32?.elevator?.currentFloor} />
-          <Row label="Tầng đích" value={d32?.elevator?.targetFloor} />
+          {/* <Row label="Tầng hiện tại" value={d32?.elevator?.currentFloor} />
+          <Row label="Tầng đích" value={d32?.elevator?.targetFloor} /> */}
+          <Row label="Tầng hiện tại" value={(d32?.elevator?.currentFloor ?? 0) + 1} />
+          <Row label="Tầng đích"     value={(d32?.elevator?.targetFloor ?? 0) + 1 } />
           <Row label="Nguồn lệnh" value={d32?.elevator?.lastSource} />
           <Row label="Step vị trí" value={d32?.elevator?.posSteps} />
           <Row label="UpdatedAt" value={fmtTs(d32?.elevator?.updatedAt)} />
