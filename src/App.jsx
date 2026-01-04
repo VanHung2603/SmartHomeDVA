@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { db } from "./firebase";
 import { ref, onValue, update } from "firebase/database";
-import AiChatWidget from "./AiChatWidget"; // ✅ THÊM DÒNG NÀY
+import AiChatWidget from "./AiChatWidget";
 
 function Card({ title, children }) {
   return (
@@ -34,10 +34,18 @@ function Btn({ onClick, children }) {
   );
 }
 
-// optional: format ts nếu bạn dùng millis/seconds demo
+// ✅ format timestamp: auto detect seconds (time(nullptr)) vs millis (Date.now())
 const fmtTs = (ts) => {
   if (ts == null) return "-";
-  return String(ts);
+
+  const n = typeof ts === "string" ? Number(ts) : ts;
+  if (!Number.isFinite(n)) return "-";
+
+  const ms = n < 1e12 ? n * 1000 : n; // <1e12 => seconds
+  return new Date(ms).toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour12: false,
+  });
 };
 
 export default function App() {
@@ -77,7 +85,6 @@ export default function App() {
 
   // helper gửi lệnh
   const sendCmd = async (path, payload) => {
-    // path ví dụ: "esp8266/fire" => cmd/esp8266/fire
     await update(ref(db, `cmd/${path}`), payload);
   };
 
@@ -97,7 +104,6 @@ export default function App() {
       latest: rfidLatest || null,
       logs: rfidLogs || [],
     },
-    // có thể thêm metadata
     updatedAt: Date.now(),
   });
 
@@ -106,7 +112,6 @@ export default function App() {
       <div className="grid">
         <div className="header">
           <h1 style={{ margin: 0 }}>Smarthome from Duong Van An School</h1>
-          {/* <div className="small">Theo dõi & điều khiển ESP8266 / ESP32 (Realtime)</div> */}
         </div>
 
         <Card title="🚪 Cửa chính (RFID)">
@@ -137,11 +142,8 @@ export default function App() {
               </li>
             ))}
           </ul>
-
-          {/* <div className="small">Cmd → /cmd/esp32/main_door</div> */}
         </Card>
 
-        {/* Báo cháy */}
         <Card title="🔥 Báo cháy (ESP8266)">
           <Row label="Gas (MQ-2)" value={d8266?.fire?.gas_ppm} />
           <Row
@@ -155,13 +157,10 @@ export default function App() {
           <Row label="Còi báo" value={d8266?.fire?.alarm ? "ON" : "OFF"} />
 
           <div className="btnBar">
-            {/* <Btn onClick={() => sendCmd("esp8266/fire", { relay: true })}>Relay ON</Btn>
-            <Btn onClick={() => sendCmd("esp8266/fire", { relay: false })}>Relay OFF</Btn> */}
             <Btn onClick={() => sendCmd("esp8266/fire", { buzzer: true })}>Buzzer</Btn>
           </div>
         </Card>
 
-        {/* LED tự động */}
         <Card title="💡 Đèn thông minh (ESP8266)">
           <Row label="Mode" value={d8266?.lighting?.mode} />
           <Row label="LED" value={d8266?.lighting?.state ? "ON" : "OFF"} />
@@ -170,19 +169,12 @@ export default function App() {
             <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "auto", onHour: 19, offHour: 22 })}>
               Tự động
             </Btn>
-            <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual" })}>
-              Thủ công
-            </Btn>
-            <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual", state: true })}>
-              LED bật
-            </Btn>
-            <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual", state: false })}>
-              LED tắt
-            </Btn>
+            <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual" })}>Thủ công</Btn>
+            <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual", state: true })}>LED bật</Btn>
+            <Btn onClick={() => sendCmd("esp8266/lighting", { mode: "manual", state: false })}>LED tắt</Btn>
           </div>
         </Card>
 
-        {/* Thu quần áo */}
         <Card title="👕 Thu quần áo (ESP32)">
           <Row label="Mưa" value={d32?.clothes?.isRaining ? "ĐANG MƯA" : "KHÔNG MƯA"} />
           <Row
@@ -219,12 +211,9 @@ export default function App() {
           </div>
         </Card>
 
-        {/* Thang máy */}
         <Card title="🛗 Thang máy (ESP32)">
-          {/* <Row label="Tầng hiện tại" value={d32?.elevator?.currentFloor} />
-          <Row label="Tầng đích" value={d32?.elevator?.targetFloor} /> */}
           <Row label="Tầng hiện tại" value={(d32?.elevator?.currentFloor ?? 0) + 1} />
-          <Row label="Tầng đích"     value={(d32?.elevator?.targetFloor ?? 0) + 1 } />
+          <Row label="Tầng đích" value={(d32?.elevator?.targetFloor ?? 0) + 1} />
           <Row label="Nguồn lệnh" value={d32?.elevator?.lastSource} />
           <Row label="Step vị trí" value={d32?.elevator?.posSteps} />
           <Row label="UpdatedAt" value={fmtTs(d32?.elevator?.updatedAt)} />
@@ -240,7 +229,6 @@ export default function App() {
         </Card>
       </div>
 
-      {/* ✅ GẮN WIDGET Ở CUỐI PAGE */}
       <AiChatWidget getContext={getContext} />
     </div>
   );
